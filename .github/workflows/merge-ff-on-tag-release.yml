@@ -1,0 +1,47 @@
+# This workflow will deploy staging in production when a release tag is pushed
+name: Merge staging into production
+
+# Triggers the workflow on any tag push that match pattern "vX.X.X.X.X"
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  merge:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout production branch
+      - name: Checkout production
+        # Checks-out repository under $GITHUB_WORKSPACE, so job can access it
+        uses: actions/checkout@v4
+        with:
+          # Fetch the whole history to prevent unrelated history errors
+          fetch-depth: '0'
+          # The branch we want to merge on
+          ref: 'production'
+
+      # Fetch staging hash
+      - name: Fetch staging head hash
+        run: |
+          echo "staging_sha=$(git rev-parse origin/staging)" >> $GITHUB_ENV
+
+      # Throw error if hashes mistmatch
+      - name: Mismatching hashes error
+        # Only if hashes are not matching
+        if: ${{ github.sha != env.staging_sha }}
+        run: |
+          echo "::error::Hashes mismatch - Release does not point the latest commit in staging branch"
+          echo ${{ env.staging_sha }} " (Last staging commit hash)"
+          echo ${{ github.sha }} " (Tag hash)"
+          exit 1
+
+      # Fast-forward the branch into production
+      - name: Merge fast-forward
+        # Only if hashes are matching
+        if: ${{ github.sha == env.staging_sha }}
+        run: |
+          git merge --ff-only origin/staging
+          git push origin production
