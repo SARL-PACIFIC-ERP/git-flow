@@ -19,6 +19,8 @@ jobs:
           fetch-depth: '0'
           # The branch we want to merge on
           ref: 'production'
+          # The token for authentication
+          token: ${{ secrets.token }}
 
       # Fetch staging hash
       - name: Fetch staging head hash
