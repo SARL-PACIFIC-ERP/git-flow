@@ -1,16 +1,13 @@
-# This workflow will deploy staging in production when a release tag is pushed
-name: Merge staging into production
+name: Main workflow for odoo.sh projects repositories
 
-# Triggers the workflow on any tag push that match pattern "vX.X.X.X.X"
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+.[0-9]+.[0-9]+"
+  workflow-call:
+    secrets:
+      token:
+        required: true
 
 jobs:
-  merge:
-    permissions:
-      contents: write
+  deploy-in-production:
     runs-on: ubuntu-latest
     steps:
       # Checkout production branch
