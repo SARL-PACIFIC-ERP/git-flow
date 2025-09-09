@@ -1,7 +1,7 @@
 name: Main workflow for odoo.sh projects repositories
 
 on:
-  workflow-call:
+  workflow_call:
     secrets:
       token:
         required: true
