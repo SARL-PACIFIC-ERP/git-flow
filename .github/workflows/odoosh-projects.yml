@@ -37,10 +37,26 @@ jobs:
           echo ${{ github.sha }} " (Tag hash)"
           exit 1
 
-      # Fast-forward the branch into production
-      - name: Merge fast-forward
+      # Merge staging into production: try fast-forward, fall back to merge commit
+      - name: Merge staging (ff then fallback)
         # Only if hashes are matching
         if: ${{ github.sha == env.staging_sha }}
         run: |
-          git merge --ff-only origin/staging
-          git push origin production
+          git fetch origin
+          # Use specific SHA to avoid race conditions if origin/staging moved
+          if git merge --ff-only ${{ env.staging_sha }}; then
+            git push origin production
+          else
+            echo "Fast-forward not possible, attempting a merge commit"
+            # Configure bot identity for merge commit
+            git config user.name "github-actions[bot]"
+            # Official GitHub Actions Bot identity
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            if git merge --no-ff --no-edit ${{ env.staging_sha }}; then
+              git push origin production
+            else
+              echo "::error::Merge failed due to conflicts; aborting"
+              git merge --abort || true
+              exit 1
+            fi
+          fi
