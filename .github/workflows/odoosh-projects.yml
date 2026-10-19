@@ -55,6 +55,9 @@ jobs:
             # Commit message follows the client repositories convention: [MRG] <repo> : ...
             if git merge --no-ff -m "[MRG] ${{ github.event.repository.name }} : staging dans production (${{ github.ref_name }})" ${{ env.staging_sha }}; then
               git push origin production
+              # Keep staging identical to production, so the next deployment fast-forwards.
+              # Plain push: refused (and only warned) if staging moved since the tag.
+              git push origin production:staging || echo "::warning::staging could not be fast-forwarded onto production; align it manually"
             else
               echo "::error::Merge failed due to conflicts; aborting"
               git merge --abort || true
