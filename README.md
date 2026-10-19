@@ -20,6 +20,7 @@ Keep in mind that in odoo.sh, branches are environments.
 - Publish a version tag (ex: `v18.0.1.0.0`) on `staging` head to automatically deploy `staging` into `production`  
   - Any tag not complying to the pattern above will be ignored
   - If tag does not match `staging` head, deployment will fail and throw an error
+  - If `production` has diverged, `staging` is merged with a commit `[MRG] <repo> : staging dans production (<tag>)`, then `staging` is fast-forwarded onto `production`
 
 ### Constrains
 
