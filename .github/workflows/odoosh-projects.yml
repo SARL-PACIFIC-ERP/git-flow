@@ -52,7 +52,8 @@ jobs:
             git config user.name "github-actions[bot]"
             # Official GitHub Actions Bot identity
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            if git merge --no-ff --no-edit ${{ env.staging_sha }}; then
+            # Commit message follows the client repositories convention: [MRG] <repo> : ...
+            if git merge --no-ff -m "[MRG] ${{ github.event.repository.name }} : staging dans production (${{ github.ref_name }})" ${{ env.staging_sha }}; then
               git push origin production
             else
               echo "::error::Merge failed due to conflicts; aborting"
